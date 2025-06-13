@@ -116,6 +116,23 @@
             cursor: not-allowed;
         }
 
+        .file-upload-label {
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-family: 'Roboto Mono', monospace;
+            cursor: pointer;
+            display: block;
+            text-align: center;
+            transition: background-color 0.3s ease;
+        }
+        
+        .file-upload-label:hover {
+            background-color: #333;
+        }
+
         pre {
             background-color: var(--bg-color);
             padding: 1rem;
@@ -270,23 +287,40 @@
             </div>
         </div>
         
-        <!-- 5. Text to Speech -->
+        <!-- 5. Text to Speech & Voice Cloning -->
         <div class="capability-card">
-            <h2>5. Text to Speech (TTS)</h2>
-            <p class="description">Convert text into audible speech using a variety of voices.</p>
+            <h2>5. Text to Speech (TTS) & Voice Cloning</h2>
+            <p class="description">Convert text into audible speech using a variety of pre-set voices.
+            <br>Additionally, you can try the experimental <strong>voice cloning</strong> feature. Upload a short, clear audio sample (.wav or .mp3, a few seconds is ideal) of a single voice, and the AI will attempt to use it to read your text.</p>
             <div class="demo-area">
                  <input type="text" id="ttsInput" placeholder="Enter text to speak..." value="Hello, I am an AI. I can speak!">
-                <select id="ttsVoice">
-                    <option value="en-female">English (Female)</option>
-                    <option value="en-male">English (Male)</option>
-                    <option value="es-female">Spanish (Female)</option>
-                    <option value="fr-male">French (Male)</option>
-                    <option value="de-female">German (Female)</option>
-                    <option value="it-male">Italian (Male)</option>
-                    <option value="ja-female">Japanese (Female)</option>
-                    <option value="ko-male">Korean (Male)</option>
-                </select>
-                <button id="speakBtn">Speak</button>
+                
+                 <div id="presetVoicesSection" style="transition: opacity 0.3s ease; margin-top: 1rem;">
+                    <label for="ttsVoice" style="display: block; margin-bottom: 0.5rem; color: var(--secondary-color);">Choose a preset voice:</label>
+                    <select id="ttsVoice">
+                        <option value="en-female">English (Female)</option>
+                        <option value="en-male">English (Male)</option>
+                        <option value="es-female">Spanish (Female)</option>
+                        <option value="fr-male">French (Male)</option>
+                        <option value="de-female">German (Female)</option>
+                        <option value="it-male">Italian (Male)</option>
+                        <option value="ja-female">Japanese (Female)</option>
+                        <option value="ko-male">Korean (Male)</option>
+                    </select>
+                 </div>
+
+                 <p style="text-align: center; color: var(--secondary-color); margin: 1rem 0;">&mdash; OR &mdash;</p>
+                
+                 <div id="voiceCloningSection">
+                     <label style="display: block; margin-bottom: 0.5rem; color: var(--secondary-color);">Clone a voice from an audio file:</label>
+                     <label for="voiceSampleInput" class="file-upload-label">
+                        <span id="fileUploadText">Choose Audio File (.wav, .mp3)</span>
+                     </label>
+                     <input type="file" id="voiceSampleInput" accept=".wav,.mp3" style="display: none;">
+                     <button id="clearVoiceSampleBtn" style="display: none; background-color: #777; margin-top: 0.5rem; align-self: center;">Clear Sample</button>
+                 </div>
+
+                <button id="speakBtn" style="margin-top: 1.5rem;">Speak</button>
                 <div id="ttsSpinner" class="loading-spinner"></div>
             </div>
         </div>
@@ -517,14 +551,40 @@
         });
         
         
-        // --- 5. Text to Speech ---
+        // --- 5. Text to Speech & Voice Cloning ---
         const speakBtn = document.getElementById('speakBtn');
         const ttsInput = document.getElementById('ttsInput');
         const ttsVoiceSelect = document.getElementById('ttsVoice');
+        const voiceSampleInput = document.getElementById('voiceSampleInput');
+        const fileUploadText = document.getElementById('fileUploadText');
+        const clearVoiceSampleBtn = document.getElementById('clearVoiceSampleBtn');
+        const presetVoicesSection = document.getElementById('presetVoicesSection');
+
+        voiceSampleInput.addEventListener('change', () => {
+            if (voiceSampleInput.files.length > 0) {
+                const fileName = voiceSampleInput.files[0].name;
+                fileUploadText.textContent = `Selected: ${fileName}`;
+                ttsVoiceSelect.disabled = true;
+                presetVoicesSection.style.opacity = '0.5';
+                presetVoicesSection.style.pointerEvents = 'none';
+                clearVoiceSampleBtn.style.display = 'block';
+            } else {
+                fileUploadText.textContent = 'Choose Audio File (.wav, .mp3)';
+                ttsVoiceSelect.disabled = false;
+                presetVoicesSection.style.opacity = '1';
+                presetVoicesSection.style.pointerEvents = 'auto';
+                clearVoiceSampleBtn.style.display = 'none';
+            }
+        });
+
+        clearVoiceSampleBtn.addEventListener('click', () => {
+            voiceSampleInput.value = ''; // Clear the file input
+            // Manually trigger the change event to reset the UI
+            voiceSampleInput.dispatchEvent(new Event('change'));
+        });
         
         speakBtn.addEventListener('click', async () => {
             const text = ttsInput.value.trim();
-            const voice = ttsVoiceSelect.value;
             if (!text) {
                 alert('Please enter some text to speak.');
                 return;
@@ -532,20 +592,52 @@
 
             disableButton(speakBtn);
             showSpinner('ttsSpinner');
+            
+            let sampleUrl = null;
 
             try {
-                const result = await websim.textToSpeech({ text, voice });
+                let ttsPayload = { text };
+
+                // Check if a voice sample is provided
+                if (voiceSampleInput.files.length > 0 && !ttsVoiceSelect.disabled) {
+                    const voice_sample_file = voiceSampleInput.files[0];
+                    sampleUrl = URL.createObjectURL(voice_sample_file);
+                    ttsPayload.voice_sample = sampleUrl;
+                } else {
+                    ttsPayload.voice = ttsVoiceSelect.value;
+                }
+                
+                const result = await websim.textToSpeech(ttsPayload);
                 const audio = new Audio(result.url);
                 audio.play();
-                audio.addEventListener('ended', () => {
-                   enableButton(speakBtn);
-                   hideSpinner('ttsSpinner');
-                });
+                
+                const onAudioEnd = () => {
+                    enableButton(speakBtn);
+                    hideSpinner('ttsSpinner');
+                    if (sampleUrl) {
+                        URL.revokeObjectURL(sampleUrl); // Clean up
+                    }
+                    audio.removeEventListener('ended', onAudioEnd);
+                    audio.removeEventListener('error', onAudioError);
+                };
+
+                const onAudioError = (e) => {
+                    console.error('Audio playback error:', e);
+                    alert('Error playing the generated audio.');
+                    onAudioEnd();
+                };
+                
+                audio.addEventListener('ended', onAudioEnd);
+                audio.addEventListener('error', onAudioError);
+
             } catch (error) {
                 console.error('TTS error:', error);
-                alert('Failed to generate speech.');
+                alert('Failed to generate speech. The voice sample might be invalid, too short, or too long.');
                 enableButton(speakBtn);
                 hideSpinner('ttsSpinner');
+                if (sampleUrl) {
+                    URL.revokeObjectURL(sampleUrl); // Clean up on generation error too
+                }
             }
         });
 
