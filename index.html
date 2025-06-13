@@ -599,7 +599,7 @@
                 let ttsPayload = { text };
 
                 // Check if a voice sample is provided
-                if (voiceSampleInput.files.length > 0 && !ttsVoiceSelect.disabled) {
+                if (voiceSampleInput.files.length > 0) {
                     const voice_sample_file = voiceSampleInput.files[0];
                     sampleUrl = URL.createObjectURL(voice_sample_file);
                     ttsPayload.voice_sample = sampleUrl;
