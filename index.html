@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Websim AI Capabilities</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Space+Grotesk:wght@400;700&display=swap');
+
+        :root {
+            --bg-color: #1a1a1a;
+            --primary-color: #f0f0f0;
+            --secondary-color: #888;
+            --accent-color: #00aaff;
+            --container-bg: #2a2a2a;
+            --border-color: #444;
+            --success-color: #4CAF50;
+            --error-color: #F44336;
+        }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            margin: 0;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin: 0;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+        }
+
+        .capability-card {
+            background-color: var(--container-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .capability-card:hover {
+            box-shadow: 0 0 15px rgba(0, 170, 255, 0.2);
+        }
+
+        .capability-card h2 {
+            font-family: 'Roboto Mono', monospace;
+            color: var(--accent-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+
+        .description {
+            color: var(--secondary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .demo-area {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        input[type="text"], select {
+            background-color: var(--bg-color);
+            color: var(--primary-color);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-family: 'Roboto Mono', monospace;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+            align-self: flex-start;
+        }
+
+        button:hover {
+            background-color: #33bbff;
+        }
+        
+        button:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        pre {
+            background-color: var(--bg-color);
+            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'Roboto Mono', monospace;
+        }
+
+        .image-container {
+            max-width: 100%;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .image-container img {
+            max-width: 100%;
+            display: block;
+        }
+        
+        .chat-box {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 4px;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .chat-message {
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        
+        .user-message {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+        }
+        
+        .assistant-message {
+            background-color: #333;
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+        }
+        
+        .loading-spinner {
+            border: 4px solid var(--secondary-color);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+            display: none; /* Hidden by default */
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>AI Capabilities Showcase</h1>
+            <p>An interactive demonstration of the AI features available in this environment.</p>
+        </header>
+
+        <!-- 1. AI Chat -->
+        <div class="capability-card">
+            <h2>1. AI Chat</h2>
+            <p class="description">Engage in a conversation with the AI. It can remember the last few messages to maintain context. Try asking it to write a poem or a short story!</p>
+            <div class="demo-area">
+                <div id="chatBox" class="chat-box"></div>
+                <div style="display: flex; gap: 1rem;">
+                    <input type="text" id="chatInput" placeholder="Type your message...">
+                    <button id="sendChatBtn">Send</button>
+                </div>
+                <div id="chatSpinner" class="loading-spinner"></div>
+            </div>
+        </div>
+
+        <!-- 2. JSON Output -->
+        <div class="capability-card">
+            <h2>2. JSON Output</h2>
+            <p class="description">The AI can be instructed to respond in a strict JSON format, making it easy to parse and use its output programmatically.</p>
+            <div class="demo-area">
+                <button id="jsonBtn">Combine "nebula" + "butterfly"</button>
+                <div id="jsonSpinner" class="loading-spinner"></div>
+                <pre id="jsonOutput">Click the button to see the JSON output.</pre>
+            </div>
+        </div>
+
+        <!-- 3. Image Analysis -->
+        <div class="capability-card">
+            <h2>3. Image Analysis (Vision)</h2>
+            <p class="description">The AI can analyze images and provide structured data about their content, again, using a JSON format for the response.</p>
+            <div class="demo-area">
+                <div class="image-container">
+                    <img id="imageToAnalyze" src="cat.png" alt="A cat sitting in a garden">
+                </div>
+                <button id="analyzeImageBtn">Analyze Image</button>
+                <div id="visionSpinner" class="loading-spinner"></div>
+                <pre id="visionOutput">Click the button to analyze the image.</pre>
+            </div>
+        </div>
+        
+        <!-- 4. Image Generation -->
+        <div class="capability-card">
+            <h2>4. Image Generation</h2>
+            <p class="description">Generate unique images from a text prompt. The more descriptive your prompt, the better the result.</p>
+            <div class="demo-area">
+                <input type="text" id="imagePrompt" placeholder="e.g., A raccoon astronaut drinking coffee">
+                <button id="generateImageBtn">Generate Image</button>
+                <div id="imageGenSpinner" class="loading-spinner"></div>
+                <div id="generatedImageContainer" class="image-container" style="display: none;">
+                    <img id="generatedImage" src="" alt="Generated image">
+                </div>
+            </div>
+        </div>
+        
+        <!-- 5. Text to Speech -->
+        <div class="capability-card">
+            <h2>5. Text to Speech (TTS)</h2>
+            <p class="description">Convert text into audible speech using a variety of voices.</p>
+            <div class="demo-area">
+                 <input type="text" id="ttsInput" placeholder="Enter text to speak..." value="Hello, I am an AI. I can speak!">
+                <select id="ttsVoice">
+                    <option value="en-female">English (Female)</option>
+                    <option value="en-male">English (Male)</option>
+                    <option value="es-female">Spanish (Female)</option>
+                    <option value="fr-male">French (Male)</option>
+                    <option value="de-female">German (Female)</option>
+                    <option value="it-male">Italian (Male)</option>
+                    <option value="ja-female">Japanese (Female)</option>
+                    <option value="ko-male">Korean (Male)</option>
+                </select>
+                <button id="speakBtn">Speak</button>
+                <div id="ttsSpinner" class="loading-spinner"></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Utility Functions ---
+        function showSpinner(id) { document.getElementById(id).style.display = 'block'; }
+        function hideSpinner(id) { document.getElementById(id).style.display = 'none'; }
+        function disableButton(btn) { btn.disabled = true; }
+        function enableButton(btn) { btn.disabled = false; }
+
+
+        // --- 1. AI Chat ---
+        const chatBox = document.getElementById('chatBox');
+        const chatInput = document.getElementById('chatInput');
+        const sendChatBtn = document.getElementById('sendChatBtn');
+        let conversationHistory = [];
+
+        async function handleChat() {
+            const userMessage = chatInput.value.trim();
+            if (!userMessage) return;
+
+            addMessageToChatbox(userMessage, 'user');
+            chatInput.value = '';
+            disableButton(sendChatBtn);
+            showSpinner('chatSpinner');
+
+            conversationHistory.push({ role: 'user', content: userMessage });
+            conversationHistory = conversationHistory.slice(-10); // Keep history short
+
+            try {
+                const completion = await websim.chat.completions.create({
+                    messages: [
+                        { role: 'system', content: 'You are a helpful and creative assistant.' },
+                        ...conversationHistory,
+                    ],
+                });
+                
+                const assistantMessage = completion.content;
+                conversationHistory.push(completion);
+                addMessageToChatbox(assistantMessage, 'assistant');
+            } catch (error) {
+                console.error('Chat error:', error);
+                addMessageToChatbox('Sorry, I encountered an error.', 'assistant');
+            } finally {
+                hideSpinner('chatSpinner');
+                enableButton(sendChatBtn);
+                chatInput.focus();
+            }
+        }
+
+        function addMessageToChatbox(text, role) {
+            const messageElem = document.createElement('div');
+            messageElem.className = `chat-message ${role}-message`;
+            messageElem.textContent = text;
+            chatBox.appendChild(messageElem);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        
+        sendChatBtn.addEventListener('click', handleChat);
+        chatInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleChat();
+        });
+
+
+        // --- 2. JSON Output ---
+        const jsonBtn = document.getElementById('jsonBtn');
+        const jsonOutput = document.getElementById('jsonOutput');
+
+        jsonBtn.addEventListener('click', async () => {
+            disableButton(jsonBtn);
+            showSpinner('jsonSpinner');
+            jsonOutput.textContent = 'Generating...';
+
+            try {
+                const completion = await websim.chat.completions.create({
+                    messages: [
+                        {
+                            role: 'system',
+                            content: `Combine the following concepts into a single, coherent idea.
+                            Respond directly with JSON, following this JSON schema, and no other text.
+                            { "concept": "string", "emoji": "string", "description": "string" }`,
+                        },
+                        { role: 'user', content: `nebula + butterfly` },
+                    ],
+                    json: true,
+                });
+
+                const result = JSON.parse(completion.content);
+                jsonOutput.textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                console.error('JSON error:', error);
+                jsonOutput.textContent = 'Error generating JSON.';
+            } finally {
+                hideSpinner('jsonSpinner');
+                enableButton(jsonBtn);
+            }
+        });
+
+
+        // --- 3. Image Analysis ---
+        const analyzeImageBtn = document.getElementById('analyzeImageBtn');
+        const visionOutput = document.getElementById('visionOutput');
+        const imageToAnalyze = document.getElementById('imageToAnalyze');
+
+        analyzeImageBtn.addEventListener('click', async () => {
+             disableButton(analyzeImageBtn);
+             showSpinner('visionSpinner');
+             visionOutput.textContent = 'Analyzing...';
+             
+             try {
+                const completion = await websim.chat.completions.create({
+                    messages: [
+                        {
+                            role: 'user',
+                            content: [
+                                {
+                                    type: 'text',
+                                    text: `Describe the image in detail. What is the subject? What is the style?
+                                    Respond directly with JSON, following this JSON schema, and no other text.
+                                    { "subject": "string", "style": "string", "isAnimal": "boolean", "colors": ["string"] }`,
+                                },
+                                {
+                                    type: 'image_url',
+                                    image_url: { url: imageToAnalyze.src },
+                                },
+                            ],
+                        },
+                    ],
+                    json: true,
+                });
+                
+                const result = JSON.parse(completion.content);
+                visionOutput.textContent = JSON.stringify(result, null, 2);
+             } catch(error) {
+                console.error('Vision error:', error);
+                visionOutput.textContent = 'Error analyzing image.';
+             } finally {
+                hideSpinner('visionSpinner');
+                enableButton(analyzeImageBtn);
+             }
+        });
+
+
+        // --- 4. Image Generation ---
+        const generateImageBtn = document.getElementById('generateImageBtn');
+        const imagePromptInput = document.getElementById('imagePrompt');
+        const generatedImageContainer = document.getElementById('generatedImageContainer');
+        const generatedImage = document.getElementById('generatedImage');
+
+        generateImageBtn.addEventListener('click', async () => {
+            const prompt = imagePromptInput.value.trim();
+            if (!prompt) {
+                alert('Please enter a prompt for the image.');
+                return;
+            }
+            
+            disableButton(generateImageBtn);
+            showSpinner('imageGenSpinner');
+            generatedImageContainer.style.display = 'none';
+
+            try {
+                const result = await websim.imageGen({ prompt });
+                generatedImage.src = result.url;
+                generatedImageContainer.style.display = 'block';
+            } catch (error) {
+                console.error('Image generation error:', error);
+                alert('Failed to generate image.');
+            } finally {
+                hideSpinner('imageGenSpinner');
+                enableButton(generateImageBtn);
+            }
+        });
+        
+        
+        // --- 5. Text to Speech ---
+        const speakBtn = document.getElementById('speakBtn');
+        const ttsInput = document.getElementById('ttsInput');
+        const ttsVoiceSelect = document.getElementById('ttsVoice');
+        
+        speakBtn.addEventListener('click', async () => {
+            const text = ttsInput.value.trim();
+            const voice = ttsVoiceSelect.value;
+            if (!text) {
+                alert('Please enter some text to speak.');
+                return;
+            }
+
+            disableButton(speakBtn);
+            showSpinner('ttsSpinner');
+
+            try {
+                const result = await websim.textToSpeech({ text, voice });
+                const audio = new Audio(result.url);
+                audio.play();
+                audio.addEventListener('ended', () => {
+                   enableButton(speakBtn);
+                   hideSpinner('ttsSpinner');
+                });
+            } catch (error) {
+                console.error('TTS error:', error);
+                alert('Failed to generate speech.');
+                enableButton(speakBtn);
+                hideSpinner('ttsSpinner');
+            }
+        });
+
+    </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+</body>
+</html>
+
