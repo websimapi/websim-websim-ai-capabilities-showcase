@@ -272,11 +272,17 @@
         <!-- 6. Sound Effect Generation -->
         <div class="capability-card">
             <h2>6. Sound Effect Generation</h2>
-            <p class="description">Yes, the AI can generate short sound effects from text prompts. While full music composition is not yet supported, simple audio clips can be created. Here is an example of a 'futuristic computer beep'.</p>
+            <p class="description">The AI can generate short sound effects from text prompts. Enter a description below to create one.</p>
             <div class="demo-area">
-                <audio controls src="futuristic_beep.mp3" style="width: 100%;">
-                    Your browser does not support the audio element.
-                </audio>
+                <input type="text" id="soundPrompt" placeholder="e.g., A cute cat meowing">
+                <button id="generateSoundBtn">Generate Sound</button>
+                <div id="soundGenSpinner" class="loading-spinner"></div>
+                <div id="soundContainer" style="width: 100%; margin-top: 1rem;">
+                    <p style="color: var(--secondary-color); margin-bottom: 0.5rem; text-align: center;">Example:</p>
+                    <audio controls src="futuristic_beep.mp3" style="width: 100%;">
+                        Your browser does not support the audio element.
+                    </audio>
+                </div>
             </div>
         </div>
 
@@ -482,6 +488,50 @@
                 alert('Failed to generate speech.');
                 enableButton(speakBtn);
                 hideSpinner('ttsSpinner');
+            }
+        });
+
+
+        // --- 6. Sound Effect Generation ---
+        const generateSoundBtn = document.getElementById('generateSoundBtn');
+        const soundPromptInput = document.getElementById('soundPrompt');
+        const soundContainer = document.getElementById('soundContainer');
+
+        generateSoundBtn.addEventListener('click', async () => {
+            const prompt = soundPromptInput.value.trim();
+            if (!prompt) {
+                alert('Please enter a prompt for the sound effect.');
+                return;
+            }
+            
+            disableButton(generateSoundBtn);
+            showSpinner('soundGenSpinner');
+            soundContainer.style.display = 'none';
+            soundContainer.innerHTML = ''; // Clear previous sound
+
+            try {
+                // Assuming websim.soundGen exists to generate audio from a prompt.
+                const result = await websim.soundGen({ 
+                    prompt: prompt,
+                    duration_seconds: 5 // Capping at 5s for sound effects
+                });
+                
+                const audio = document.createElement('audio');
+                audio.src = result.url;
+                audio.controls = true;
+                audio.style.width = '100%';
+                
+                soundContainer.appendChild(audio);
+                soundContainer.style.display = 'block';
+                audio.play();
+
+            } catch (error) {
+                console.error('Sound generation error:', error);
+                soundContainer.innerHTML = `<p style="color: var(--error-color);">Error generating sound. This feature might not be available yet.</p>`;
+                soundContainer.style.display = 'block';
+            } finally {
+                hideSpinner('soundGenSpinner');
+                enableButton(generateSoundBtn);
             }
         });
 
